@@ -96,33 +96,35 @@ public class ListPopMenu extends JPopupMenu {
 		database = new JMenuItem("数据库管理");
 		shell = new JMenuItem("模拟终端");
 		headconfig = new JMenuItem("请求头设置");
+		forceshell = new JMenuItem("破解shell");
 		database.addActionListener(action);
 		filemanager.addActionListener(action);
 		shell.addActionListener(action);
 		headconfig.addActionListener(action);
+		forceshell.addActionListener(action);
 		this.add(filemanager);
 		this.add(database);
 		this.add(shell);
 		this.add(headconfig);
+		this.add(forceshell);
 		this.addSeparator();
 		add = new JMenuItem("添加");
 		edit = new JMenuItem("编辑");
 		delete = new JMenuItem("删除");
 		config = new JMenuItem("设置");
-		forceshell = new JMenuItem("破解shell");
+		
 		this.add(add);
 		this.add(edit);
 		this.add(delete);
-		this.add(forceshell);
+		
 		this.addSeparator();
 		this.add(config);
 		
 		add.addActionListener(action);
 		edit.addActionListener(action);
 		delete.addActionListener(action);
-		forceshell.addActionListener(action);
+		
 		config.addActionListener(action);
-		forceshell.addActionListener(action);
 		database.setEnabled(true);
 		panel.add(this);
 	}
@@ -242,7 +244,6 @@ public class ListPopMenu extends JPopupMenu {
 				new ConfigDialog("1"); // 当请求头配置被点击时 2017-12-5
 			} else if(e.getSource() == forceshell){ // 破解shell密码
 				String str = getOne(list);
-				System.out.println(this.getClass().getName()+" 245 "+str);
 				MainFrame.tab.setUrl(getOne(list));
 				Runnable run = new Runnable() {
 					public void run() {

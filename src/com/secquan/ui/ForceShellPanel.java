@@ -46,10 +46,7 @@ public class ForceShellPanel extends JPanel {
 		this.setSize(900, 480);
 		setLayout(null);
 		String[] strs = str.split("\t");
-		for (int i = 0; i < strs.length; i++) {
-			System.out.println(this.getClass().getName() + "30 " + strs[i]);
-
-		}
+		
 		JLabel lblNewLabel = new JLabel("URL");
 		lblNewLabel.setBounds(17, 21, 54, 15);
 		add(lblNewLabel);

@@ -58,7 +58,6 @@ public class TabFrame extends JTabbedPane {
 		    this.setTabComponentAt(this.getTabCount()-1, new HeadPanel(text));
 			return text;
 		case "forceshell": // 添加破解asp 或php shell密码
-			System.out.println(this.getClass().getName()+" 61 "+ url);
 			ForceShellPanel forceShellPanel = new ForceShellPanel(url);
 			this.addTab("破解shell", forceShellPanel);
 			this.setSelectedIndex(this.indexOfComponent(forceShellPanel));
