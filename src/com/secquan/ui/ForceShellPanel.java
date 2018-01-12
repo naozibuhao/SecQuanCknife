@@ -1,5 +1,8 @@
 package com.secquan.ui;
 
+import java.awt.Dimension;
+import java.awt.Rectangle;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -15,6 +18,7 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 import javax.swing.JTextPane;
+import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 
 import com.secquan.util.HttpRequestUtil;
@@ -32,8 +36,9 @@ public class ForceShellPanel extends JPanel {
 	private Document shell_doc;//
 	private static JTextArea textArea;
 	private JTextField countThread;
-	private static List list = new ArrayList();
+	public static List list = new ArrayList();
 	private static JLabel statusLable;
+	private static JScrollPane scrollPane;
 
 	public ForceShellPanel() {
 
@@ -45,19 +50,27 @@ public class ForceShellPanel extends JPanel {
 	public ForceShellPanel(String str) {
 		this.setSize(900, 480);
 		setLayout(null);
-		String[] strs = str.split("\t");
+		
+		String[] strs = new String[]{};
+		if (!"".equals(str)){
+			strs = str.split("\t");
+		}
 		
 		JLabel lblNewLabel = new JLabel("URL");
 		lblNewLabel.setBounds(17, 21, 54, 15);
 		add(lblNewLabel);
-
-		statusLable = new JLabel("完成");
+		// 状态栏 目前还没有开始使用
+		statusLable = new JLabel("");
 		statusLable.setBounds(9, 395, 500, 20);
 		add(statusLable);
 
 		urlPath = new JTextField();
 		urlPath.setBounds(81, 18, 522, 21);
-		urlPath.setText(strs[1]);
+		if (!"".equals(str)){
+			urlPath.setText(strs[1]);
+		}else{
+			urlPath.setText("");
+		}
 		add(urlPath);
 		urlPath.setColumns(10);
 		String labels[] = {  "PHP" };
@@ -88,7 +101,7 @@ public class ForceShellPanel extends JPanel {
 		filePath.setBounds(81, 46, 522, 21);
 		add(filePath);
 
-		JButton button = new JButton("浏览");
+		JButton button = new JButton("添加");
 		button.addActionListener(new ActionListener() {
 			//
 			public void actionPerformed(ActionEvent e) {
@@ -97,7 +110,9 @@ public class ForceShellPanel extends JPanel {
 		});
 		button.setBounds(684, 49, 93, 23);
 		add(button);
-
+		
+		
+		
 		JButton clearButton = new JButton("清空");
 		clearButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -120,7 +135,7 @@ public class ForceShellPanel extends JPanel {
 		textArea.setBounds(5, 77, 880, 317);
 		add(textArea);
 		// 绑定滚动条
-		JScrollPane scrollPane = new JScrollPane(textArea);
+		scrollPane = new JScrollPane(textArea);
 		scrollPane.setBounds(5, 77, 880, 317);
 		// 设定滚动条显示时机
 		scrollPane.setHorizontalScrollBarPolicy(JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
@@ -134,16 +149,20 @@ public class ForceShellPanel extends JPanel {
 		add(countThread);
 		countThread.setColumns(10);
 		//
+		
+		DefaultCaret caret = (DefaultCaret)textArea.getCaret();
+		caret.setUpdatePolicy(DefaultCaret.ALWAYS_UPDATE);	
 
 	}
 
 	// 清空按钮事件
 	public void clearMsg(java.awt.event.ActionEvent evt) {
 		// 清空所有消息
-		statusLable.setText("清理密码信息...");
+		changeStatus("清理密码信息...");
 		list.clear();
-		textArea.setText("");
-		statusLable.setText("清理密码信息完成");
+		textArea.setText(""); // 清空消息域中的内容
+		filePath.setText(""); // 清空filepath中路径
+		changeStatus("清理密码信息完成");
 
 	}
 
@@ -151,51 +170,68 @@ public class ForceShellPanel extends JPanel {
 	private void startButtonAction(java.awt.event.ActionEvent evt) {
 		forcePassword();
 	}
-
+	
+	
+	
+	/**
+	 * 添加内容到TextArea中
+	 * @param msg 要添加的内容消息
+	 * @param flag 是否要刷新textarea
+	 */
+	public static void changeTextArea(String msg ,boolean flag){
+		textArea.append(msg);
+		textArea.append("\n");
+		if (flag){
+			
+//			textArea.paintImmediately(textArea.getBounds());
+			textArea.paintImmediately(textArea.getX(), textArea.getY(), textArea.getWidth(), textArea.getHeight());
+			textArea.setCaretPosition(textArea.getDocument().getLength());
+			textArea.scrollRectToVisible(new   Rectangle(0,   textArea.getHeight(),   0,   0)); 
+		}
+	}
+	
+	
 	public static void readFile() {
-
+		
 		// 获取路径
 		String filepath = filePath.getText();
 
 		filepath = filepath.trim();
 		// 如果长度为0 那么表示没有字典文件 弹出警告
 		if (filepath.length() == 0) {
-
+			changeTextArea("没有选择密码文件",true);
+			return;
 		}
-		list = ReadFromFile.readFileByLines(filepath);
-		for (int x = 0; x < list.size(); x++) {
-			// 获取list列表中所有的密码
-			// System.out.println(list.get(x));
-			textArea.append((String) list.get(x));
-			textArea.append("\n");
-			// 这里是为了及时刷新textArea
-			System.out.println(x);
-			if (x != 0 && x % 1000 == 0) {
-				textArea.paintImmediately(textArea.getBounds());
-			}
+		changeTextArea("正在加载密码文件...",true);
+		ReadFromFile.readFileByLines(filepath);
+		int i = list.size();
 
-		}
 		System.out.println("文件加载完毕");
-		String listsize = String.valueOf(list.size());
-		textArea.append("密码共 " + listsize + " 个");
+		String listsize = String.valueOf(i);
+		changeTextArea("密码共 " + listsize + " 个",true);
 
 	}
+	/**
+	 * 修改状态栏信息
+	 */
+	public static void changeStatus(String msg){
+		
+//		statusLable.setText(msg);
+	}
+	
 
 	// 准备回调加载密码文件
 	// 如果把文件拖动到地址框里面去 那么直接刷新内容框
 	public static synchronized void callBack() {
-		statusLable.setText("正在加载密码文件...");
-
 		readFile();
-		statusLable.setText("密码文件加载完成");
+		changeStatus("密码文件加载完成");
 	}
 
 	// 浏览按钮点击事件
 	private void jButton3ActionPerformed(java.awt.event.ActionEvent evt) {
 		this.filePath.setText(reFileAbso());
-		statusLable.setText("正在加载密码文件...");
 		readFile();
-		statusLable.setText("密码文件加载完成");
+		changeStatus("密码文件加载完成");
 	}
 
 	// 点击浏览按钮逻辑处理事件
@@ -204,23 +240,26 @@ public class ForceShellPanel extends JPanel {
 		jfc.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 		jfc.showDialog(new JLabel(), "选择");
 		File file = jfc.getSelectedFile();
-		if (file.isDirectory()) {
-			System.out.println("文件夹:" + file.getAbsolutePath());
-			return "二货,不要选文件夹 要选文件";
-			// return file.getAbsolutePath();
-			// this.jTextField1.setText(file.getAbsolutePath());
-		} else if (file.isFile()) {
-			return file.getAbsolutePath();
-			// System.out.println("文件:"+file.getAbsolutePath());
+		if(null != file){
+			if (file.isDirectory()) {
+				System.out.println("文件夹:" + file.getAbsolutePath());
+				return "二货,不要选文件夹 要选文件";
+				// return file.getAbsolutePath();
+				// this.jTextField1.setText(file.getAbsolutePath());
+			} else if (file.isFile()) {
+				return file.getAbsolutePath();
+				// System.out.println("文件:"+file.getAbsolutePath());
 
+			}
 		}
+		
 		return "";
 	}
 
 	// 准备破解密码
 	public void forcePassword() {
 		long startTime = System.currentTimeMillis();
-		statusLable.setText("正在进行破解...");
+		changeStatus("正在进行破解...");
 		// 密码文件大小
 		int listsize = list.size();
 		// 每1000个分一组
@@ -229,6 +268,7 @@ public class ForceShellPanel extends JPanel {
 		List wrapList = new ArrayList();
 		List passwordList;
 		int count = 0; // 起步值
+		int step = 0; // 记录当前组数
 		String urls = urlPath.getText();
 		// 将数组进行分组
 		String msgs = "";
@@ -238,19 +278,27 @@ public class ForceShellPanel extends JPanel {
 
 			passwordList = new ArrayList(
 					list.subList(count, (count + quantity) > list.size() ? list.size() : count + quantity));
+			step++;
+			changeTextArea("正在破解第"+String.valueOf(step)+"组",true);
+//			System.out.println(this.getClass().getName()+" 275 ");
 			String msg = HttpRequestUtil.realyPost(urls, passwordList);
+			
 			if (msg.length() > 0) {
 				msgs = msg;
 				break;
 			}
 			count += quantity;
 		}
-		textArea.append("\n" + msgs);
+		changeTextArea(msgs,true);
 		long endTime = System.currentTimeMillis();
 		long Times = endTime - startTime;
 		String strTimes = String.valueOf(Times);
-		statusLable.setText("破解完成" + " 共耗时" + " " + strTimes + " 毫秒");
+		changeTextArea("破解完成" + " 共耗时" + " " + strTimes + " 毫秒",true);
+		//statusLable.setText("破解完成" + " 共耗时" + " " + strTimes + " 毫秒");
+		
 
 	}
-
+	
+	
+	
 }

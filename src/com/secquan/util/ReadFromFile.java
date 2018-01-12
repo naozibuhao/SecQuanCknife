@@ -12,6 +12,8 @@ import java.io.Reader;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.secquan.ui.ForceShellPanel;
+
 /**
  * 读取文件util
  * @author wyyw
@@ -121,35 +123,38 @@ public class ReadFromFile {
     /**
      * 以行为单位读取文件，常用于读面向行的格式化文件
      */
-    public static List readFileByLines(String fileName) {
-    	List list = new ArrayList();
+    public static int readFileByLines(String fileName) {
         File file = new File(fileName);
+        int line = 1;
         BufferedReader reader = null;
         try {
             System.out.println("以行为单位读取文件内容，一次读一整行：");
             reader = new BufferedReader(new FileReader(file));
             String tempString = null;
-            int line = 1;
+           
             // 一次读入一行，直到读入null为文件结束
             while ((tempString = reader.readLine()) != null) {
                 // 显示行号
-//                System.out.println("line " + line + ": " + tempString);
-                list.add(tempString);
+            	// 添加消息到textarea中 后来想了想其实没必要
+//                ForceShellPanel.changeTextArea(tempString);
+            	ForceShellPanel.list.add(tempString);
                 line++;
+//                System.out.println(line);
             }
+//            ForceShellPanel.list = list;
             reader.close();
-            return list;
+            return line;
         } catch (IOException e) {
         	
             e.printStackTrace();
-            return null;
+            return 0;
         } finally {
             if (reader != null) {
                 try {
                     reader.close();
-                    return list;
+                    return line;
                 } catch (IOException e1) {
-                	return null;
+                	return 0;
                 }
             }
         }

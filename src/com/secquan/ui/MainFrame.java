@@ -11,7 +11,7 @@ public class MainFrame {
 		// TODO Auto-generated constructor stub
 		Toolkit t = Toolkit.getDefaultToolkit();
 		Dimension d = t.getScreenSize();
-		main = new JFrame("圈子版--菜刀1.2");
+		main = new JFrame("圈子版--菜刀1.3");
 		main.setIconImage(new ImageIcon(getClass().getResource("/com/secquan/images/logos.png")).getImage());
 		main.setSize(900, 480);
 		main.setLocation((d.width - main.getWidth()) / 2,
