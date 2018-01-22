@@ -6,6 +6,8 @@ import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,6 +15,7 @@ import javax.swing.JButton;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
@@ -21,6 +24,8 @@ import javax.swing.JTextPane;
 import javax.swing.text.DefaultCaret;
 import javax.swing.text.Document;
 
+import com.secquan.ui.panel.ListPanel;
+import com.secquan.util.DbDao;
 import com.secquan.util.HttpRequestUtil;
 import com.secquan.util.ReadFromFile;
 
@@ -29,7 +34,6 @@ public class ForceShellPanel extends JPanel {
 	private static JTextField filePath;
 	private JTextPane jtp;
 	private String url;
-	private String type;
 	private JTextArea reSource;
 	private JTextPane console;
 	private JScrollPane console_scroll;
@@ -39,6 +43,7 @@ public class ForceShellPanel extends JPanel {
 	public static List list = new ArrayList();
 	private static JLabel statusLable;
 	private static JScrollPane scrollPane;
+	private static JComboBox comboBox;
 
 	public ForceShellPanel() {
 
@@ -46,6 +51,7 @@ public class ForceShellPanel extends JPanel {
 
 	/**
 	 * Create the panel.
+	 * @author naozibuhao
 	 */
 	public ForceShellPanel(String str) {
 		this.setSize(900, 480);
@@ -73,15 +79,15 @@ public class ForceShellPanel extends JPanel {
 		}
 		add(urlPath);
 		urlPath.setColumns(10);
-		String labels[] = {  "PHP" };
+		String labels[] = { "ASP", "PHP","UnKnow" };
 
-		JComboBox comboBox = new JComboBox(labels);
-		// 根据连接类型判断类型 后面要加上asp的破解
-//		if (strs[4].indexOf("ASP(Eval)") > -1) {
-//			comboBox.setSelectedIndex(0);
-//		} else if (strs[4].indexOf("PHP(Eval)") > -1) {
-//			comboBox.setSelectedIndex(1);
-//		}
+		comboBox = new JComboBox(labels);
+//		 根据连接类型判断类型 后面要加上asp的破解
+		if (strs[4].indexOf("ASP(Eval)") > -1) {
+			comboBox.setSelectedIndex(0);
+		} else if (strs[4].indexOf("PHP(Eval)") > -1) {
+			comboBox.setSelectedIndex(1);
+		}
 		/**
 		 * 目前仅支持PHP 和asp 因为jsp只识别一个参数
 		 */
@@ -166,9 +172,35 @@ public class ForceShellPanel extends JPanel {
 
 	}
 
+	
+	
+	
+	
+	
+	
+	
 	// 开始按钮点击事件
 	private void startButtonAction(java.awt.event.ActionEvent evt) {
+		
+		// 说明文件里面没有任何东西 
+		if (list.size()<1){
+			JOptionPane.showMessageDialog(null,
+					"密码字典为空", "提示", JOptionPane.INFORMATION_MESSAGE);
+			return;
+		}
+
+		int quantity = Integer.valueOf(countThread.getText());
+		// 当选择的参数大于1000的时候 给出提示框
+		if(quantity >1000){
+			int button = JOptionPane.showConfirmDialog(MainFrame.main,
+					"发送参数并非越大越好,请根据情况自己调节!\n是否继续", "提示", JOptionPane.YES_NO_OPTION);
+			if (button == 0) { // 如果选是
+			}else{ //选否的话不做任何处理
+				return ;
+			}
+		}
 		forcePassword();
+		
 	}
 	
 	
@@ -190,7 +222,10 @@ public class ForceShellPanel extends JPanel {
 		}
 	}
 	
-	
+	/**
+	 * 读取文件
+	 * @author naozibuhao
+	 */
 	public static void readFile() {
 		
 		// 获取路径
@@ -256,7 +291,9 @@ public class ForceShellPanel extends JPanel {
 		return "";
 	}
 
-	// 准备破解密码
+	/**
+	 * 准备破解密码
+	 */
 	public void forcePassword() {
 		long startTime = System.currentTimeMillis();
 		changeStatus("正在进行破解...");
@@ -270,20 +307,26 @@ public class ForceShellPanel extends JPanel {
 		int count = 0; // 起步值
 		int step = 0; // 记录当前组数
 		String urls = urlPath.getText();
+		String type = (String)comboBox.getSelectedItem(); // 获取选择类型
 		// 将数组进行分组
 		String msgs = "";
 		while (count < list.size()) {
 			// wrapList.add(new ArrayList(list.subList(count, (count + quantity)
 			// > list.size() ? list.size() : count + quantity)));
-
+			// 对list安装参数个数进行分组
 			passwordList = new ArrayList(
 					list.subList(count, (count + quantity) > list.size() ? list.size() : count + quantity));
 			step++;
 			changeTextArea("正在破解第"+String.valueOf(step)+"组",true);
 //			System.out.println(this.getClass().getName()+" 275 ");
-			String msg = HttpRequestUtil.realyPost(urls, passwordList);
+			String msg = HttpRequestUtil.realyPost(urls, passwordList,type);
 			
 			if (msg.length() > 0) {
+				
+				// 如果返回错误,那么直接结束
+	        	if("ERROR ".indexOf(msg)>0){
+	        		break;
+	        	}
 				msgs = msg;
 				break;
 			}
