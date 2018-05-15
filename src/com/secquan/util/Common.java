@@ -151,7 +151,23 @@ public class Common {
 					data = data + ": ";
 				}
 				String[] headers = data.split(":");
-				Common.map.put(headers[0], headers[1]);
+				
+				
+				/**
+				 * 有人提出来  Referer: https://github.com/
+				 *  这样在发送的时候  请求头会被处理成 Referer : https
+				 *  检查代码知晓 通过: 进行请求头分割,然后只保留里第0 和第1个参数 剩下的都给丢弃了
+				 *  
+				 */
+				
+				String key = data.substring(0, data.indexOf(":"));
+				
+				String value = data.substring(data.indexOf(":")+1,data.length());
+				
+				
+				
+				Common.map.put(key, value);
+//				Common.map.put(headers[0], headers[1]);
 			}
 		}
 	}
