@@ -69,8 +69,8 @@ public class Request {
 			if (Safe.REQUEST_STATUS.equals("1")) {
 				Common.RequestHeader(huc);
 			}
-			huc.setConnectTimeout(10000);
-			huc.setReadTimeout(10000);
+			huc.setConnectTimeout(60000);
+			huc.setReadTimeout(60000);
 			huc.setDoOutput(true);
 			PrintWriter out = new PrintWriter(huc.getOutputStream());
 			out.write(param);
