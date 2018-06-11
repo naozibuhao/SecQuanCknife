@@ -21,6 +21,10 @@ public class Common {
 	public static HashMap<String, String> map = new HashMap<String, String>();
 
 	public static String purData(String data) {
+		// 参考 ninetysec的git https://github.com/ninetysec/Cknife/tree/master/src/com/ms509/util
+		data = data.replace("&gt;", ">");
+		data = data.replace("&lt;", "<");
+		data = data.replace("&quot;", "\"");
 		String datas = data;
 		String regex = Common.purRegex(Safe.SPL) + "(.*)"
 				+ Common.purRegex(Safe.SPR);
